@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Kev Coupons</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:#111;background:#f5f5f7}
+*{box-sizing:border-box} body{margin:0;padding:env(safe-area-inset-top) 16px calc(92px + env(safe-area-inset-bottom));max-width:760px;margin:auto}
+header{padding:28px 4px 18px} h1{font-size:38px;letter-spacing:-1.3px;margin:0} .sub{color:#6e6e73;margin-top:5px}
+.card{background:#fff;border-radius:24px;padding:18px;margin:12px 0;box-shadow:0 1px 8px #0000000a}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.shop{min-height:104px;font-size:18px;font-weight:700;display:flex;align-items:flex-end}
+.badge{display:inline-block;background:#eef7ee;padding:6px 10px;border-radius:999px;font-size:12px}.muted{color:#6e6e73}
+button,.btn{border:0;border-radius:14px;padding:12px 14px;background:#111;color:#fff;font-weight:650;text-decoration:none;display:inline-block}
+input,select{width:100%;font-size:16px;padding:13px;border:1px solid #ddd;border-radius:13px;margin:6px 0;background:white}
+nav{position:fixed;left:0;right:0;bottom:0;background:#ffffffed;backdrop-filter:blur(18px);border-top:1px solid #ddd;padding:10px 10px calc(10px + env(safe-area-inset-bottom));display:flex;justify-content:space-around}
+nav button{background:none;color:#666;padding:8px;font-size:12px}nav button.active{color:#111}
+section{display:none}section.active{display:block}.coupon-code{font:700 20px ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+</head>
+<body>
+<header><h1>Kev Coupons</h1><div class="sub">Coupons & Preisalarme</div></header>
+
+<section id="today" class="active">
+<div class="card"><span class="badge">✓ Verifizierungsprinzip</span><h2>Dein Shopping-Hub</h2><p class="muted">Codes sollen Quelle, Bedingungen und letzten Prüfzeitpunkt zeigen. Ungeprüfte Codes werden nicht als gültig ausgegeben.</p></div>
+<h2>Shops</h2><div class="grid" id="shopGrid">
+<a class="card shop" href="https://www.zalando.de" target="_blank">Zalando ↗</a>
+<a class="card shop" href="https://www.amazon.de" target="_blank">Amazon ↗</a>
+<a class="card shop" href="https://www.saturn.de" target="_blank">Saturn ↗</a>
+<a class="card shop" href="https://www.peek-cloppenburg.de" target="_blank">Peek &amp; Cloppenburg ↗</a>
+<a class="card shop" href="https://www.aboutyou.de" target="_blank">ABOUT YOU ↗</a>
+<a class="card shop" href="https://www.adidas.de" target="_blank">adidas ↗</a>
+<a class="card shop" href="https://www.nike.com/de" target="_blank">Nike ↗</a>
+<a class="card shop" href="https://www.cyberport.de" target="_blank">Cyberport ↗</a>
+</div>
+</section>
+
+<section id="coupons">
+<h2>Coupons</h2>
+<div class="card"><span class="badge">⌕ Gefilterte Gutschein-Suche V13</span><h3>Zalando-Gutscheine suchen</h3><p class="muted">Die App durchsucht öffentliche Gutscheinseiten und filtert offensichtliche Fremdtreffer, abgelaufene Bereiche und technische Platzhalter heraus. Treffer bleiben Kandidaten, bis du sie im Zalando-Warenkorb geprüft hast.</p><button id="couponRefresh" onclick="loadCoupons()">Zalando-Codes suchen</button><p class="muted" id="couponStatus">Noch nicht geprüft.</p></div>
+<div class="card"><h3>Privaten Gutschein hinzufügen</h3>
+<select id="couponShop"><option>Zalando</option><option>Amazon</option><option>Saturn</option><option>Peek &amp; Cloppenburg</option><option>ABOUT YOU</option><option>adidas</option><option>Nike</option><option>Cyberport</option><option>Anderer Shop</option></select>
+<input id="couponCode" placeholder="Gutscheincode">
+<input id="couponBenefit" placeholder="Rabatt/Vorteil, z. B. 15 %">
+<input id="couponConditions" placeholder="Bedingungen (optional)">
+<input id="couponExpiry" type="date">
+<input id="couponSource" placeholder="Quelle, z. B. Zalando App">
+<button onclick="addPrivateCoupon()">Gutschein speichern</button>
+<p class="muted">Wird nur auf diesem Gerät im Browser gespeichert.</p></div>
+<div id="privateCouponList"></div>
+<div id="couponList"></div>
+</section>
+
+<section id="watch">
+<h2>Beobachtung</h2>
+<div class="card"><h3>Artikel hinzufügen</h3>
+<input id="url" type="url" placeholder="Produktlink einfügen">
+<input id="price" inputmode="decimal" placeholder="Wunschpreis in € (optional)">
+<input id="discount" inputmode="numeric" placeholder="Rabatt in % (optional)">
+<button onclick="addWatch()">Beobachten</button></div>
+<div id="watchList"></div>
+</section>
+
+<section id="settings">
+<h2>Einstellungen</h2>
+<div class="card"><h3>Kev Coupons 1.3</h3><p class="muted">Private iPhone-Web-App mit Zalando-Coupon-Suche über öffentlich erreichbare Gutscheinquellen. Gefundene Codes werden als Hinweise angezeigt und nicht automatisch als bei Zalando verifiziert bezeichnet.</p></div>
+</section>
+
+<nav>
+<button class="active" onclick="show('today',this)">Heute</button>
+<button onclick="show('coupons',this)">Coupons</button>
+<button onclick="show('watch',this)">Beobachtung</button>
+<button onclick="show('settings',this)">Einstellungen</button>
+</nav>
+<script>
+function show(id,b){document.querySelectorAll('section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+function data(){try{return JSON.parse(localStorage.getItem('kevWatches')||'[]')}catch{return[]}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function privateCoupons(){try{return JSON.parse(localStorage.getItem('kevPrivateCoupons')||'[]')}catch{return[]}}
+function renderPrivateCoupons(){const a=privateCoupons(),el=document.getElementById('privateCouponList');el.innerHTML=a.length?a.map((c,i)=>`<div class="card"><span class="badge">Privat gespeichert</span><h3>${esc(c.shop)}</h3><div class="coupon-code">${esc(c.code)}</div><p>${esc(c.benefit||'')}</p><p class="muted">Bedingungen: ${esc(c.conditions||'–')}</p><p class="muted">Gültig bis: ${esc(c.expiry||'–')} · Quelle: ${esc(c.source||'–')}</p><button onclick="delPrivateCoupon(${i})">Löschen</button></div>`).join(''):'<div class="card muted">Noch keine privaten Gutscheine gespeichert.</div>'}
+function addPrivateCoupon(){const shop=document.getElementById('couponShop').value,code=document.getElementById('couponCode').value.trim();if(!code)return alert('Bitte einen Gutscheincode eingeben.');const a=privateCoupons();a.unshift({shop,code,benefit:document.getElementById('couponBenefit').value.trim(),conditions:document.getElementById('couponConditions').value.trim(),expiry:document.getElementById('couponExpiry').value,source:document.getElementById('couponSource').value.trim(),savedAt:new Date().toISOString()});localStorage.setItem('kevPrivateCoupons',JSON.stringify(a));['couponCode','couponBenefit','couponConditions','couponExpiry','couponSource'].forEach(id=>document.getElementById(id).value='');renderPrivateCoupons()}
+function delPrivateCoupon(i){const a=privateCoupons();a.splice(i,1);localStorage.setItem('kevPrivateCoupons',JSON.stringify(a));renderPrivateCoupons()}
+async function loadCoupons(){const status=document.getElementById('couponStatus'),list=document.getElementById('couponList'),btn=document.getElementById('couponRefresh');status.textContent='Suche und filtere Zalando-Code-Kandidaten …';btn.disabled=true;try{const r=await fetch(window.location.origin+'/.netlify/functions/coupons',{method:'GET',headers:{'Accept':'application/json'},cache:'no-store'}),j=await r.json();if(!r.ok)throw new Error(j.error||'Coupon-Prüfung fehlgeschlagen.');status.textContent='Letzte Prüfung: '+new Date(j.checkedAt).toLocaleString('de-DE');if(!j.coupons?.length){list.innerHTML='<div class="card"><h3>Keine öffentlichen Codes gefunden</h3><p class="muted">'+esc(j.message||'Aktuell wurde auf der offiziellen Zalando-Seite kein öffentlicher Aktionscode erkannt.')+'</p></div>';return}list.innerHTML=j.coupons.map(c=>'<div class="card"><span class="badge">'+esc(c.status||'Kandidat – noch nicht geprüft')+'</span><h3>'+esc(c.shop)+'</h3><div class="coupon-code">'+esc(c.code)+'</div><p><strong>'+esc(c.benefit||'')+'</strong></p><p class="muted">Bedingungen: '+esc(c.conditions||'–')+'</p><p class="muted">Quelle: '+(c.sourceUrl?'<a href="'+esc(c.sourceUrl)+'" target="_blank" rel="noopener">'+esc(c.source||'Quelle')+' ↗</a>':esc(c.source||'–'))+' · gefunden: '+esc(c.checkedAt?new Date(c.checkedAt).toLocaleString('de-DE'):'–')+'</p></div>').join('')}catch(e){status.textContent=e.message||'Coupon-Prüfung fehlgeschlagen.';list.innerHTML='<div class="card muted">Die Coupon-Daten konnten nicht geladen werden.</div>'}finally{btn.disabled=false}}
+function money(v){return Number(v).toLocaleString('de-DE',{style:'currency',currency:'EUR'})}
+function render(){let a=data();document.getElementById('watchList').innerHTML=a.length?a.map((x,i)=>`<div class="card"><b>Beobachteter Artikel</b><p class="muted">${x.url}</p>${x.price?`<p>Wunschpreis: ${x.price} €</p>`:''}${x.discount?`<p>Alarm ab: ${x.discount}% Rabatt</p>`:''}<p><b>Aktueller Preis:</b> ${x.currentPrice!=null?money(x.currentPrice):'noch nicht geprüft'}</p><p class="muted">Letzte Prüfung: ${x.checkedAt?new Date(x.checkedAt).toLocaleString('de-DE'):'–'}</p><button onclick="checkPrice(${i})">Preis jetzt prüfen</button> <a class="btn" href="${x.url}" target="_blank">Öffnen</a> <button onclick="delWatch(${i})">Löschen</button></div>`).join(''):'<div class="card muted">Noch keine Artikel beobachtet.</div>'}
+function addWatch(){let u=document.getElementById('url').value.trim();if(!u)return alert('Bitte einen Produktlink einfügen.');let a=data();a.unshift({url:u,price:document.getElementById('price').value,discount:document.getElementById('discount').value,currentPrice:null,checkedAt:null});localStorage.setItem('kevWatches',JSON.stringify(a));document.getElementById('url').value='';document.getElementById('price').value='';document.getElementById('discount').value='';render()}
+async function checkPrice(i){let a=data(),x=a[i];if(!x)return;try{const r=await fetch('/.netlify/functions/check-price',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:x.url})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Preisprüfung fehlgeschlagen.');x.currentPrice=j.price;x.checkedAt=new Date().toISOString();a[i]=x;localStorage.setItem('kevWatches',JSON.stringify(a));render();if(j.price==null)alert('Produktseite geprüft, aber kein Preis konnte sicher erkannt werden.');else alert('Aktueller Preis: '+money(j.price));}catch(e){alert(e.message||'Preisprüfung fehlgeschlagen.')}}
+function delWatch(i){let a=data();a.splice(i,1);localStorage.setItem('kevWatches',JSON.stringify(a));render()} render();renderPrivateCoupons();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+loadCoupons();
+</script></body></html>
