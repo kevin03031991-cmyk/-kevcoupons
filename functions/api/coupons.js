@@ -19,7 +19,23 @@ function plausible(code){
   return true;
 }
 function badContext(s){
-  return /abgelaufene\s+rabattcodes|ähnlichen\s+shops|shops?\s+wie\s+zalando|beliebte\s+shops,?\s+ähnlich|dieser\s+gutscheincode\s+wird\s+am\s+öftesten\s+auch\s+bei\s+shops/i.test(s);
+  // Offensichtlich falsche oder abgelaufene Bereiche
+  if (/abgelaufen|abgelaufene\s+rabattcodes|nicht\s+mehr\s+gültig|nicht\s+mehr\s+verfügbar/i.test(s)) {
+    return true;
+  }
+
+  // Alte Treffer aussortieren: "vor 2 Monaten", "vor 8 Monaten",
+  // "vor 1 Jahr", "vor 3 Jahren" usw.
+  if (/vor\s+(?:[2-9]|\d{2,})\s+monaten/i.test(s)) {
+    return true;
+  }
+
+  if (/vor\s+\d+\s+jahren?/i.test(s)) {
+    return true;
+  }
+
+  // Bisherige Fremdtreffer weiterhin blockieren
+  return /ähnlichen\s+shops|shops?\s+wie\s+zalando|beliebte\s+shops|dieser\s+gutscheincode\s+wird\s+am\s+öftesten\s+auch\s+bei\s+shops/i.test(s);
 }
 function sourceSpecificPlausible(code, sourceName, context){
   if(!plausible(code) || badContext(context)) return false;
