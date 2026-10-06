@@ -28,18 +28,28 @@ function sourceSpecificPlausible(code, sourceName, context){
   return true;
 }
 function findCodes(text){
-  const hits=new Map();
-  const patterns=[
-    /(?:code(?:\s+anzeigen)?|gutscheincode|rabattcode|aktionscode)\s*(?:ist|lautet|:|-)?\s*([A-Z0-9][A-Z0-9-]{3,19})\b/gi,
-    /\b([A-Z0-9][A-Z0-9-]{3,19})\b\s*(?:code\s+anzeigen|kopieren|gutscheincode|rabattcode)/gi
-  ];
-  for(const re of patterns){let m;while((m=re.exec(text))){
-    const code=m[1].toUpperCase(); if(!plausible(code)) continue;
-    const s=Math.max(0,m.index-120),e=Math.min(text.length,m.index+m[0].length+190),context=text.slice(s,e).trim();
-    if(badContext(context)) continue;
-    hits.set(code,context);
-  }}
-  return [...hits].map(([code,context])=>({code,context}));
+  const hits = new Map();
+
+  const re = /(?:gutscheincode|rabattcode|aktionscode|couponcode|promo[- ]?code|code)\s*(?:anzeigen|kopieren)?\s*(?:ist|lautet|:|-)?\s*["']?([A-Z0-9][A-Z0-9-]{3,19})["']?/gi;
+
+  let m;
+
+  while ((m = re.exec(text)) !== null) {
+    const code = m[1].toUpperCase();
+
+    if (!plausible(code)) continue;
+    if (!/[0-9-]/.test(code)) continue;
+
+    const s = Math.max(0, m.index - 120);
+    const e = Math.min(text.length, m.index + m[0].length + 190);
+    const context = text.slice(s, e);
+
+    if (badContext(context)) continue;
+
+    hits.set(code, context);
+  }
+
+  return [...hits].map(([code,context]) => ({code,context}));
 }
 function benefitFromContext(s){
   const around=s.replace(/\s+/g," ");
