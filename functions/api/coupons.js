@@ -125,6 +125,6 @@ export async function onRequestGet(){
 
   delete c.sources;
   return c;
-}).sort((a,b)=>b.sourceCount-a.sourceCount || a.code.localeCompare(b.code));
+}).filter(c=>c.sourceCount>=2).sort((a,b)=>b.sourceCount-a.sourceCount || a.code.localeCompare(b.code));
   return new Response(JSON.stringify({checkedAt,coupons,checkedSources,message:coupons.length?`${coupons.length} gefilterte Zalando-Code-Kandidat(en) gefunden. Vor dem Kauf im Zalando-Warenkorb prüfen.`:"Keine ausreichend plausiblen Zalando-Code-Kandidaten gefunden. Die Quellen wurden geprüft, aber unsichere, abgelaufene oder fremde Treffer wurden ausgefiltert."}), {status:200,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","Access-Control-Allow-Origin":"*"}});
 };
