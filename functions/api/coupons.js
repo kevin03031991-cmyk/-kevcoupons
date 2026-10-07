@@ -94,8 +94,18 @@ export async function onRequestGet(){
     }catch(e){checkedSources.push({name:source.name,url:source.url,error:String(e.message||e)});}
   }
   const coupons=[...found.values()].map(c=>{
-    c.status=c.sources.length>=2?`Auf ${c.sources.length} Quellen gefunden – noch nicht bei Zalando geprüft`:"Kandidat aus öffentlicher Quelle – noch nicht bei Zalando geprüft";
-    c.sourceCount=c.sources.length; delete c.sources; return c;
-  }).sort((a,b)=>b.sourceCount-a.sourceCount || a.code.localeCompare(b.code));
+  c.sourceCount=c.sources.length;
+
+  if(c.sourceCount>=2){
+    c.status=`Sehr guter Kandidat – auf ${c.sourceCount} Quellen gefunden`;
+    c.confidence="hoch";
+  }else{
+    c.status="Kandidat aus einer öffentlichen Quelle – bitte bei Zalando prüfen";
+    c.confidence="mittel";
+  }
+
+  delete c.sources;
+  return c;
+}).sort((a,b)=>b.sourceCount-a.sourceCount || a.code.localeCompare(b.code));
   return new Response(JSON.stringify({checkedAt,coupons,checkedSources,message:coupons.length?`${coupons.length} gefilterte Zalando-Code-Kandidat(en) gefunden. Vor dem Kauf im Zalando-Warenkorb prüfen.`:"Keine ausreichend plausiblen Zalando-Code-Kandidaten gefunden. Die Quellen wurden geprüft, aber unsichere, abgelaufene oder fremde Treffer wurden ausgefiltert."}), {status:200,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","Access-Control-Allow-Origin":"*"}});
 };
