@@ -39,8 +39,27 @@ function badContext(s){
 }
 function sourceSpecificPlausible(code, sourceName, context){
   if(!plausible(code) || badContext(context)) return false;
-  if(sourceName === "TrustDeals" && /OTK\d*$/i.test(code)) return false;
-  if(/^(?:SALE|EXTRA|WILKOMMEN)\d{1,2}$/i.test(code) && /ähnlichen\s+shops|shops?\s+wie\s+zalando/i.test(context)) return false;
+
+  const c=String(code).toUpperCase();
+  const x=String(context || "");
+
+  // Code muss aus Buchstaben UND Zahlen bestehen.
+  // Dadurch verschwinden Wörter wie EBAY, DIESEM, ADIDAS usw.
+  if(!/[A-Z]/.test(c) || !/\d/.test(c)) return false;
+
+  // Typische technische oder allgemeine Fremdtreffer
+  if(/^(?:HTML|HTTP|HTTPS|UTF8|COOKIE|LOGIN|EMAIL|APP|SHOP|ZALANDO)$/i.test(c)) return false;
+
+  // Alte Treffer im direkten Umfeld blockieren
+  if(/vor\s+(?:[2-9]|\d{2,})\s+monaten?/i.test(x)) return false;
+  if(/vor\s+\d+\s+jahren?/i.test(x)) return false;
+
+  // Kontext muss tatsächlich nach Gutschein/Rabatt aussehen
+  if(!/(?:gutschein|rabatt|aktionscode|coupon|promo|code|%)/i.test(x)) return false;
+
+  // Bekannte TrustDeals-Platzhalter weiterhin entfernen
+  if(sourceName === "TrustDeals" && /^OTK\d*$/i.test(c)) return false;
+
   return true;
 }
 function findCodes(text){
