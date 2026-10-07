@@ -192,11 +192,21 @@ export async function onRequestPost(context) {
     });
 
     if (!response.ok) {
-      return json(
-        { error: "Shop antwortete mit HTTP " + response.status + "." },
-        502
-      );
-    }
+  if (response.status === 403) {
+    return json(
+      {
+        error:
+          "Dieser Shop blockiert die automatische Preisprüfung. Du kannst den Artikel weiterhin beobachten und über „Öffnen“ den aktuellen Preis direkt beim Shop prüfen."
+      },
+      403
+    );
+  }
+
+  return json(
+    { error: "Der Shop konnte gerade nicht automatisch geprüft werden." },
+    502
+  );
+}
 
     const finalUrl = new URL(response.url);
 
