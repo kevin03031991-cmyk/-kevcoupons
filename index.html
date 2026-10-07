@@ -87,7 +87,32 @@ function money(v){return Number(v).toLocaleString('de-DE',{style:'currency',curr
 function render(){let a=data();document.getElementById('watchList').innerHTML=a.length?a.map((x,i)=>`<div class="card"><b>Beobachteter Artikel</b><p class="muted">${x.url}</p>${x.price?`<p>Wunschpreis: ${x.price} €</p>`:''}${x.discount?`<p>Alarm ab: ${x.discount}% Rabatt</p>`:''}<p><b>Aktueller Preis:</b> ${x.currentPrice!=null?money(x.currentPrice):'noch nicht geprüft'}</p><p class="muted">Letzte Prüfung: ${x.checkedAt?new Date(x.checkedAt).toLocaleString('de-DE'):'–'}</p><button onclick="checkPrice(${i})">Preis jetzt prüfen</button> <button onclick="manualPrice(${i})">Preis eintragen</button> <a class="btn" href="${x.url}" target="_blank">Öffnen</a> <button onclick="delWatch(${i})">Löschen</button></div>`).join(''):'<div class="card muted">Noch keine Artikel beobachtet.</div>'}
 function addWatch(){let u=document.getElementById('url').value.trim();if(!u)return alert('Bitte einen Produktlink einfügen.');let a=data();a.unshift({url:u,price:document.getElementById('price').value,discount:document.getElementById('discount').value,currentPrice:null,checkedAt:null});localStorage.setItem('kevWatches',JSON.stringify(a));document.getElementById('url').value='';document.getElementById('price').value='';document.getElementById('discount').value='';render()}
 async function checkPrice(i){let a=data(),x=a[i];if(!x)return;try{const r=await fetch('/api/check-price',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:x.url})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Preisprüfung fehlgeschlagen.');x.currentPrice=j.price;x.checkedAt=new Date().toISOString();a[i]=x;localStorage.setItem('kevWatches',JSON.stringify(a));render();if(j.price==null)alert('Produktseite geprüft, aber kein Preis konnte sicher erkannt werden.');else alert('Aktueller Preis: '+money(j.price));}catch(e){alert(e.message||'Preisprüfung fehlgeschlagen.')}}
-function delWatch(i){let a=data();a.splice(i,1);localStorage.setItem('kevWatches',JSON.stringify(a));render()} render();renderPrivateCoupons();
+function manualPrice(i){
+  let a=data(),x=a[i];
+  if(!x)return;
+
+  let v=prompt('Aktuellen Preis in € eingeben:');
+  if(v===null)return;
+
+  v=v.trim().replace(',','.');
+  let p=Number(v);
+
+  if(!Number.isFinite(p)||p<=0){
+    return alert('Bitte einen gültigen Preis eingeben.');
+  }
+
+  x.currentPrice=p;
+  x.checkedAt=new Date().toISOString();
+  a[i]=x;
+  localStorage.setItem('kevWatches',JSON.stringify(a));
+  render();
+
+  if(x.price && p<=Number(String(x.price).replace(',','.'))){
+    alert('🎉 Wunschpreis erreicht! Aktueller Preis: '+money(p));
+  }else{
+    alert('Preis gespeichert: '+money(p));
+  }
+}let a=data();a.splice(i,1);localStorage.setItem('kevWatches',JSON.stringify(a));render()} render();renderPrivateCoupons();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 loadCoupons();
 </script></body></html>
