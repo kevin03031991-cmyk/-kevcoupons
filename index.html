@@ -58,6 +58,7 @@ section{display:none}section.active{display:block}.coupon-code{font:700 20px ui-
 <div class="card"><h3>Artikel hinzufügen</h3>
 <input id="url" type="url" placeholder="Produktlink einfügen">
 <input id="price" inputmode="decimal" placeholder="Wunschpreis in € (optional)">
+<input id="originalPrice" inputmode="decimal" placeholder="Originalpreis in € (optional)">
 <input id="discount" inputmode="numeric" placeholder="Rabatt in % (optional)">
 <button onclick="addWatch()">Beobachten</button></div>
 <div id="watchList"></div>
@@ -95,17 +96,19 @@ function addWatch(){
 
   let a=data();
   a.unshift({
-    url:u,
-    price:document.getElementById('price').value,
-    discount:document.getElementById('discount').value,
+  url:u,
+  price:document.getElementById('price').value,
+  originalPrice:document.getElementById('originalPrice').value,
+  discount:document.getElementById('discount').value,
     currentPrice:null,
     checkedAt:null
   });
 
   localStorage.setItem('kevWatches',JSON.stringify(a));
   document.getElementById('url').value='';
-  document.getElementById('price').value='';
-  document.getElementById('discount').value='';
+document.getElementById('price').value='';
+document.getElementById('originalPrice').value='';
+document.getElementById('discount').value='';
   render();
 }
 
@@ -160,11 +163,17 @@ function manualPrice(i){
   localStorage.setItem('kevWatches',JSON.stringify(a));
   render();
 
-  if(x.price && p<=Number(String(x.price).replace(',','.'))){
-    alert('🎉 Wunschpreis erreicht! Aktueller Preis: '+money(p));
-  }else{
-    alert('Preis gespeichert: '+money(p));
-  }
+  let original=Number(String(x.originalPrice||'').replace(',','.'));
+let zielRabatt=Number(String(x.discount||'').replace(',','.'));
+let rabatt=original>0 ? ((original-p)/original)*100 : 0;
+
+if(x.price && p<=Number(String(x.price).replace(',','.'))){
+  alert('🎉 Wunschpreis erreicht! Aktueller Preis: '+money(p));
+}else if(original>0 && zielRabatt>0 && rabatt>=zielRabatt){
+  alert('🎉 Rabattziel erreicht! Aktuell '+rabatt.toFixed(1).replace('.',',')+' % günstiger.');
+}else{
+  alert('Preis gespeichert: '+money(p)+(original>0?' · Rabatt: '+rabatt.toFixed(1).replace('.',',')+' %':''));
+}
 }
 
 function delWatch(i){
