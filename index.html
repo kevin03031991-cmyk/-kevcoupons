@@ -151,7 +151,15 @@ async function checkPrice(i){
       alert('Aktueller Preis: '+money(j.price));
     }
   }catch(e){
-    alert(e.message||'Preisprüfung fehlgeschlagen.');
+    if(/403|blockiert/i.test(e.message||'')){
+  if(confirm('Der Shop blockiert die automatische Preisprüfung.\n\nOK = Shop öffnen\nAbbrechen = Preis manuell eintragen')){
+    window.open(x.url,'_blank');
+  }else{
+    manualPrice(i);
+  }
+}else{
+  alert(e.message||'Preisprüfung fehlgeschlagen.');
+}
   }
 }
 
