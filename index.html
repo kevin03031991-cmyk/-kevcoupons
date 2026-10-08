@@ -182,7 +182,7 @@ function manualPrice(i){
   a[i]=x;
   localStorage.setItem('kevWatches',JSON.stringify(a));
   render();
-
+preisBenachrichtigung(x, p);
   let original=Number(String(x.originalPrice||'').replace(',','.'));
 let zielRabatt=Number(String(x.discount||'').replace(',','.'));
 let rabatt=original>0 ? ((original-p)/original)*100 : 0;
@@ -195,7 +195,32 @@ if(x.price && p<=Number(String(x.price).replace(',','.'))){
   alert('Preis gespeichert: '+money(p)+(original>0?' · Rabatt: '+rabatt.toFixed(1).replace('.',',')+' %':''));
 }
 }
+function preisBenachrichtigung(x, preis) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
 
+  const original = Number(String(x.originalPrice || "").replace(",", "."));
+  const ziel = Number(String(x.price || "").replace(",", "."));
+  const rabattZiel = Number(String(x.discount || "").replace(",", "."));
+
+  const rabatt = original > 0 ? (original - preis) / original * 100 : 0;
+
+  const erreicht =
+    (ziel > 0 && preis <= ziel) ||
+    (original > 0 && rabattZiel > 0 && rabatt >= rabattZiel);
+
+  if (!erreicht) return;
+
+  const meldung = new Notification("🎉 Kev Coupons – Preisalarm!", {
+    body: "Dein Preisziel wurde erreicht! Aktueller Preis: " +
+      preis.toFixed(2).replace(".", ",") + " €",
+    icon: "/icon.svg"
+  });
+
+  meldung.onclick = function () {
+    window.open(x.url, "_blank");
+  };
+}
 function delWatch(i){
   let a=data();
   a.splice(i,1);
