@@ -65,8 +65,11 @@ section{display:none}section.active{display:block}.coupon-code{font:700 20px ui-
 </section>
 
 <section id="settings">
-<h2>Einstellungen</h2>
-<div class="card"><h3>Kev Coupons 1.3</h3><p class="muted">Private iPhone-Web-App mit Zalando-Coupon-Suche über öffentlich erreichbare Gutscheinquellen. Gefundene Codes werden als Hinweise angezeigt und nicht automatisch als bei Zalando verifiziert bezeichnet.</p></div>
+  <h2>Einstellungen</h2>
+  <div class="card">...</div>
+  <div class="card">
+    <button onclick="aktiviereBenachrichtigungen()">🔔 Benachrichtigungen aktivieren</button>
+  </div>
 </section>
 
 <nav>
@@ -228,6 +231,24 @@ function delWatch(i){
   render();
 }
 
+}async function aktiviereBenachrichtigungen() {
+  if (!("Notification" in window)) {
+    alert("Bitte Kev Coupons als Home-Bildschirm-App öffnen.");
+    return;
+  }
+
+  try {
+    const erlaubnis = await Notification.requestPermission();
+
+    if (erlaubnis === "granted") {
+      alert("🔔 Benachrichtigungen aktiviert!");
+    } else {
+      alert("Benachrichtigungen nicht erlaubt.");
+    }
+  } catch (e) {
+    alert("Benachrichtigungen konnten nicht aktiviert werden.");
+  }
+}
 render();
 renderPrivateCoupons();
 
