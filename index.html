@@ -116,7 +116,7 @@ function productName(url){
   document.getElementById('watchList').innerHTML=a.length?a.map((x,i)=>{let original=Number(String(x.originalPrice||'').replace(',','.'));let current=x.currentPrice!=null?Number(x.currentPrice):null;let rabatt=original>0&&current!=null?((original-current)/original)*100:null;return `<div class="card"><p><b>${esc(productName(x.url))}</b></p>${x.price?`<p>Wunschpreis: ${esc(x.price)} €</p>`:''}${x.originalPrice?`<p>Originalpreis: ${money(String(x.originalPrice).replace(',','.'))}</p>`:''}${x.discount?`<p>Alarm ab: ${esc(x.discount)}% Rabatt</p>`:''}<p><b>Aktueller Preis:</b> ${current!=null?money(current):'noch nicht geprüft'}</p>${rabatt!=null?`<p><b>Aktueller Rabatt:</b> ${rabatt.toFixed(1).replace('.',',')} %</p>${x.discount&&rabatt>=Number(String(x.discount).replace(',','.'))?'<p><b>🎉 Rabattziel erreicht!</b></p>':''}`:''}<p class="muted">Letzte Prüfung: ${x.checkedAt?new Date(x.checkedAt).toLocaleString('de-DE'):'–'}</p><button onclick="checkPrice(${i})">Preis jetzt prüfen</button> <button onclick="manualPrice(${i})">Preis eintragen</button> <a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Öffnen</a> <button onclick="delWatch(${i})">Löschen</button></div>`}).join(''):'<div class="card muted">Noch keine Artikel beobachtet.</div>';
 }
 
-function addWatch(){
+async function addWatch(){
   let u=document.getElementById('url').value.trim();
   if(!u)return alert('Bitte einen Produktlink einfügen.');
 
@@ -131,6 +131,32 @@ function addWatch(){
   });
 
   localStorage.setItem('kevWatches',JSON.stringify(a));
+  try {
+  const response = await fetch(
+    'https://kevcoupons-preisalarm.kevin03031991.workers.dev/watches',
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: u,
+        name: productName(u),
+        targetPrice: Number(
+          String(document.getElementById('price').value)
+            .replace(',', '.')
+        )
+      })
+    }
+  );
+
+  if (!response.ok) {
+    console.warn('Cloud-Speicherung fehlgeschlagen:', response.status);
+  }
+} catch (error) {
+  console.warn('Cloud-Speicherung nicht erreichbar:', error);
+}
   document.getElementById('url').value='';
 document.getElementById('price').value='';
 document.getElementById('originalPrice').value='';
