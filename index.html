@@ -118,8 +118,9 @@ function data(){try{return JSON.parse(localStorage.getItem('kevWatches')||'[]')}
       if (!url || lokal.some(x => x.url === url)) continue;
 
       lokal.push({
-        url: url,
-        price: item.target_price ?? '',
+  cloudId: item.id,
+  url: url,
+  price: item.target_price ?? '',
         originalPrice: item.original_price ?? '',
         discount: item.discount ?? '',
         currentPrice: item.current_price ?? null,
@@ -193,9 +194,18 @@ async function addWatch(){
     }
   );
 
-  if (!response.ok) {
-    console.warn('Cloud-Speicherung fehlgeschlagen:', response.status);
+  if (response.ok) {
+  const ergebnis = await response.json();
+
+  if (ergebnis.id) {
+    a[0].cloudId = ergebnis.id;
+    localStorage.setItem('kevWatches', JSON.stringify(a));
   }
+}
+
+if (!response.ok) {
+  console.warn("Cloud-Speicherung fehlgeschlagen:", response.status);
+}
 } catch (error) {
   console.warn('Cloud-Speicherung nicht erreichbar:', error);
 }
@@ -264,6 +274,7 @@ function manualPrice(i){
   a[i]=x;
   localStorage.setItem('kevWatches',JSON.stringify(a));
   render();
+speichereCloudPreis(x, p);
 preisBenachrichtigung(x, p);
   let original=Number(String(x.originalPrice||'').replace(',','.'));
 let zielRabatt=Number(String(x.discount||'').replace(',','.'));
@@ -276,6 +287,30 @@ if(x.price && p<=Number(String(x.price).replace(',','.'))){
 }else{
   alert('Preis gespeichert: '+money(p)+(original>0?' · Rabatt: '+rabatt.toFixed(1).replace('.',',')+' %':''));
 }
+}
+
+async function speichereCloudPreis(x, preis) {
+  if (!x.cloudId) return;
+
+  try {
+    const response = await fetch(
+      "/api/preisalarm/watches/" + x.cloudId,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ currentPrice: preis })
+      }
+    );
+
+    if (!response.ok) {
+      console.warn("Cloud-Preis konnte nicht gespeichert werden.");
+    }
+  } catch (error) {
+    console.warn("Cloud-Speicherung fehlgeschlagen:", error);
+  }
 }
 function preisBenachrichtigung(x, preis) {
   if (!("Notification" in window)) return;
