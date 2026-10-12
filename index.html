@@ -92,6 +92,48 @@ section{display:none}section.active{display:block}.coupon-code{font:700 20px ui-
 <script>
 function show(id,b){document.querySelectorAll('section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
 function data(){try{return JSON.parse(localStorage.getItem('kevWatches')||'[]')}catch{return[]}}
+  async function ladeCloudPreisalarme() {
+  try {
+    const response = await fetch('/api/preisalarm/watches', {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      console.warn('Cloud-Laden fehlgeschlagen:', response.status);
+      return;
+    }
+
+    const ergebnis = await response.json();
+    const artikel = Array.isArray(ergebnis)
+      ? ergebnis
+      : (ergebnis.watches || []);
+
+    if (!Array.isArray(artikel)) return;
+
+    const lokal = data();
+
+    for (const item of artikel) {
+      const url = item.url || item.product_url;
+      if (!url || lokal.some(x => x.url === url)) continue;
+
+      lokal.push({
+        url: url,
+        price: item.target_price ?? '',
+        originalPrice: item.original_price ?? '',
+        discount: item.discount ?? '',
+        currentPrice: item.current_price ?? null,
+        checkedAt: item.checked_at ?? null
+      });
+    }
+
+    localStorage.setItem('kevWatches', JSON.stringify(lokal));
+    render();
+
+  } catch (error) {
+    console.warn('Cloud-Preisalarme konnten nicht geladen werden:', error);
+  }
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function privateCoupons(){try{return JSON.parse(localStorage.getItem('kevPrivateCoupons')||'[]')}catch{return[]}}
 function renderPrivateCoupons(){const a=privateCoupons(),el=document.getElementById('privateCouponList');el.innerHTML=a.length?a.map((c,i)=>`<div class="card"><span class="badge">Privat gespeichert</span><h3>${esc(c.shop)}</h3><div class="coupon-code">${esc(c.code)}</div><p>${esc(c.benefit||'')}</p><p class="muted">Bedingungen: ${esc(c.conditions||'–')}</p><p class="muted">Gültig bis: ${esc(c.expiry||'–')} · Quelle: ${esc(c.source||'–')}</p><button onclick="delPrivateCoupon(${i})">Löschen</button></div>`).join(''):'<div class="card muted">Noch keine privaten Gutscheine gespeichert.</div>'}
@@ -288,7 +330,7 @@ async function aktiviereBenachrichtigungen() {
 }
 render();
 renderPrivateCoupons();
-
+ladeCloudPreisalarme();
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
 }
