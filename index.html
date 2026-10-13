@@ -115,7 +115,13 @@ function data(){try{return JSON.parse(localStorage.getItem('kevWatches')||'[]')}
 
     for (const item of artikel) {
       const url = item.url || item.product_url;
-      if (!url || lokal.some(x => x.url === url)) continue;
+      if (!url) continue;
+
+const vorhanden = lokal.find(x => x.url === url);
+if (vorhanden) {
+  vorhanden.cloudId = item.id;
+  continue;
+}
 
       lokal.push({
   cloudId: item.id,
