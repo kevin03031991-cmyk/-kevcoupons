@@ -371,7 +371,7 @@ async function aktiviereBenachrichtigungen() {
 }
 render();
 renderPrivateCoupons();
-ladeCloudPreisalarme();
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
 }
@@ -398,8 +398,9 @@ async function loginKev(event) {
       return;
     }
 
-    document.getElementById('loginPassword').value = '';
-    document.getElementById('loginScreen').style.display = 'none';
+   document.getElementById('loginPassword').value = '';
+document.getElementById('loginScreen').style.display = 'none';
+ladeCloudPreisalarme();
   } catch (e) {
     error.textContent = 'Verbindung zum Anmeldeserver fehlgeschlagen.';
   }
