@@ -120,6 +120,8 @@ function data(){try{return JSON.parse(localStorage.getItem('kevWatches')||'[]')}
 const vorhanden = lokal.find(x => x.url === url);
 if (vorhanden) {
   vorhanden.cloudId = item.id;
+  vorhanden.currentPrice = item.current_price ?? vorhanden.currentPrice ?? null;
+  vorhanden.checkedAt = item.checked_at ?? vorhanden.checkedAt ?? null;
   continue;
 }
 
