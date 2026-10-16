@@ -373,7 +373,7 @@ async function aktiviereBenachrichtigungen() {
 }
 render();
 renderPrivateCoupons();
-
+ladeCloudPreisalarme();
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js');
 }
