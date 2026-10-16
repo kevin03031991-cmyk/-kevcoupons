@@ -165,7 +165,33 @@ function productName(url){
   function render(){
   let a=data();
   document.getElementById('watchList').innerHTML=a.length?a.map((x,i)=>{let original=Number(String(x.originalPrice||'').replace(',','.'));let current=x.currentPrice!=null?Number(x.currentPrice):null;let rabatt=original>0&&current!=null?((original-current)/original)*100:null;return `<div class="card"><p><b>${esc(productName(x.url))}</b></p>${x.price?`<p>Wunschpreis: ${esc(x.price)} €</p>`:''}${x.originalPrice?`<p>Originalpreis: ${money(String(x.originalPrice).replace(',','.'))}</p>`:''}${x.discount?`<p>Alarm ab: ${esc(x.discount)}% Rabatt</p>`:''}<p><b>Aktueller Preis:</b> ${current!=null?money(current):'noch nicht geprüft'}</p>${rabatt!=null?`<p><b>Aktueller Rabatt:</b> ${rabatt.toFixed(1).replace('.',',')} %</p>${x.discount&&rabatt>=Number(String(x.discount).replace(',','.'))?'<p><b>🎉 Rabattziel erreicht!</b></p>':''}`:''}<p class="muted">Letzte Prüfung: ${x.checkedAt?new Date(x.checkedAt).toLocaleString('de-DE'):'–'}</p><button onclick="checkPrice(${i})">Preis jetzt prüfen</button> <button onclick="manualPrice(${i})">Preis eintragen</button> <a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Öffnen</a> <button onclick="delWatch(${i})">Löschen</button></div>`}).join(''):'<div class="card muted">Noch keine Artikel beobachtet.</div>';
-}
+document.querySelectorAll('#watchlist .card').forEach((karte, i) => {
+  const x = a[i];
+  if (!x) return;
+
+  const preis = Number(x.currentPrice);
+  const ziel = Number(String(x.price || '').replace(',', '.'));
+  const original = Number(String(x.originalPrice || '').replace(',', '.'));
+  const rabattZiel = Number(String(x.discount || '').replace(',', '.'));
+
+  const rabatt = original > 0
+    ? (original - preis) / original * 100
+    : 0;
+
+  const erreicht = x.currentPrice != null && (
+    (ziel > 0 && preis <= ziel) ||
+    (original > 0 && rabattZiel > 0 && rabatt >= rabattZiel)
+  );
+
+  if (erreicht) {
+    karte.style.background = '#e8f8ec';
+    karte.style.border = '2px solid #27ae60';
+    karte.insertAdjacentHTML(
+      'afterbegin',
+      '<p style="color:#167a38;font-weight:bold">🎉 Preisalarm erreicht!</p>'
+    );
+  }
+});}
 
 async function addWatch(){
   let u=document.getElementById('url').value.trim();
